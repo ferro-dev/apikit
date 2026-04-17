@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+  <LangVersion>latest</LangVersion>
+  <ImplicitUsings>enable</ImplicitUsings>
+  <Nullable>enable</Nullable>
+
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+  <!-- NuGet package metadata -->
+  <PackageId>ApiKit</PackageId>
+  <Authors>ferro-dev</Authors>
+  <Description>A compositional base layer for building typed .NET API clients.</Description>
+  <PackageTags>api;rest;http;client;api-client</PackageTags>
+  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  <PackageProjectUrl>https://github.com/ferro-dev/apikit</PackageProjectUrl>
+  <RepositoryUrl>https://github.com/ferro-dev/apikit</RepositoryUrl>
+  <RepositoryType>git</RepositoryType>
+  <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+  <None Include="../../README.md" Pack="true" PackagePath="/" />
+  <None Include="../../LICENSE" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+  <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>ApiKit.Tests</_Parameter1>
+  </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>
