@@ -30,7 +30,9 @@ jobs:
           versionSpec: '6.x'
 
       - name: Build, test, pack, and publish
-        run: ./build.sh Test Pack Push --TargetNuGetServer https://api.nuget.org/v3/index.json --NuGetApiKey ${{ secrets.NUGET_API_KEY }}
+        env:
+          NuGetApiKey: ${{ secrets.NUGET_API_KEY }}
+        run: ./build.sh Test Pack Push --TargetNuGetServer https://api.nuget.org/v3/index.json
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
