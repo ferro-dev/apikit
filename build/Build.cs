@@ -7,9 +7,11 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Tools.ReportGenerator;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 
 class Build : NukeBuild
 {
@@ -89,6 +91,15 @@ class Build : NukeBuild
     .SetProperty("ThresholdType", "line")
     .SetProperty("CoverletOutputFormat", "cobertura")
     .SetResultsDirectory(ArtifactsDirectory / "tests"));
+
+      // Merge per-TFM cobertura reports into a single union (was this line hit in any TFM?).
+      var coverageDir = ArtifactsDirectory / "coverage";
+      ReportGenerator(s => s
+    .SetReports(coverageDir / "coverage.*.cobertura.xml")
+    .SetTargetDirectory(coverageDir)
+    .SetReportTypes(ReportTypes.Cobertura));
+
+      (coverageDir / "Cobertura.xml").Move(coverageDir / "coverage.cobertura.xml", ExistsPolicy.FileOverwrite);
   });
 
   Target Pack => _ => _

@@ -13,6 +13,7 @@
   <ItemGroup>
   <PackageReference Include="Nuke.Common" Version="10.1.0" />
   <PackageDownload Include="GitVersion.Tool" Version="[6.7.0]" />
+  <PackageDownload Include="ReportGenerator" Version="[5.4.4]" />
   <!-- Pin transitive deps to patched versions (GHSA-g4vj-cjjj-v7hg, GHSA-37gx-xxp4-5rgx, GHSA-w3x6-4m5h-cxqf) -->
   <PackageReference Include="NuGet.Packaging" Version="6.12.5" />
   <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.15" />

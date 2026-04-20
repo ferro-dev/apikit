@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  checks: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for GitVersion
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.2.1
+        with:
+          versionSpec: '6.x'
+
+      - name: Test
+        run: ./build.sh Test
+
+      - name: Test report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results
+          path: artifacts/tests/**/*.trx
+          reporter: dotnet-trx
+
+      - name: Coverage report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        # Skip while src/ has no .cs yet — merged cobertura has empty <packages/> and the action errors.
+        # Exclude obj/bin so SDK-generated files (AssemblyInfo.cs, GlobalUsings.g.cs) don't trip the gate.
+        if: always() && hashFiles('src/**/*.cs', '!src/**/obj/**', '!src/**/bin/**') != ''
+        with:
+          filename: artifacts/coverage/coverage.cobertura.xml
+          badge: true
+          format: markdown
+          output: both
+          thresholds: '70 80'
+
+      - name: Add coverage to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request' && hashFiles('src/**/*.cs', '!src/**/obj/**', '!src/**/bin/**') != ''
+        with:
+          path: code-coverage-results.md
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: artifacts/coverage/
+
+      - name: Upload test results artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: artifacts/tests/
+
+  tag:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.2.1
+        with:
+          versionSpec: '6.x'
+
+      - name: Determine version
+        id: version
+        uses: gittools/actions/gitversion/execute@v3.2.1
+
+      - name: Create git tag
+        run: |
+          TAG="v${{ steps.version.outputs.semVer }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "Created and pushed tag $TAG"
+          fi
