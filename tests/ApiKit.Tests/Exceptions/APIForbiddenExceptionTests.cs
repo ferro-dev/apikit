@@ -22,13 +22,13 @@ public class APIForbiddenExceptionTests
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized)]
     [InlineData(HttpStatusCode.Forbidden)]
-    public void Explicit_status_overrides_default(HttpStatusCode status)
+    public void Named_status_overrides_default(HttpStatusCode status)
     {
-        new APIForbiddenException(status).StatusCode.ShouldBe(status);
+        new APIForbiddenException(statusCode: status).StatusCode.ShouldBe(status);
     }
 
     [Fact]
-    public void Message_ctor_keeps_default_status_and_preserves_message()
+    public void Message_preserved_with_default_status()
     {
         var ex = new APIForbiddenException("nope");
 
@@ -37,33 +37,22 @@ public class APIForbiddenExceptionTests
     }
 
     [Fact]
-    public void Status_message_ctor_covers_401()
-    {
-        var ex = new APIForbiddenException(HttpStatusCode.Unauthorized, "auth");
-
-        ex.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-        ex.Message.ShouldBe("auth");
-    }
-
-    [Fact]
-    public void Message_inner_ctor_preserves_all()
+    public void All_params_preserved()
     {
         var inner = new Exception("root");
 
-        var ex = new APIForbiddenException("nope", inner);
+        var ex = new APIForbiddenException("auth", inner, HttpStatusCode.Unauthorized);
+
+        ex.Message.ShouldBe("auth");
+        ex.InnerException.ShouldBeSameAs(inner);
+        ex.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public void Parameterless_ctor_usable_via_reflection()
+    {
+        var ex = (APIForbiddenException)Activator.CreateInstance(typeof(APIForbiddenException))!;
 
         ex.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
-        ex.InnerException.ShouldBeSameAs(inner);
-    }
-
-    [Fact]
-    public void Status_message_inner_ctor_preserves_all()
-    {
-        var inner = new Exception("root");
-
-        var ex = new APIForbiddenException(HttpStatusCode.Unauthorized, "auth", inner);
-
-        ex.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-        ex.InnerException.ShouldBeSameAs(inner);
     }
 }

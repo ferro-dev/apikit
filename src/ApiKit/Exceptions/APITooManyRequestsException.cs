@@ -1,36 +1,27 @@
 using System.Net;
 using System.Net.Http.Headers;
 
-#pragma warning disable CS1591
-
 namespace ApiKit.Exceptions;
 
 /// <summary>
 /// Thrown when the API returns an HTTP 429 Too Many Requests response. Inspect
 /// <see cref="RetryAfter"/> to determine how long to wait before retrying, when
-/// the server supplies a <c>Retry-After</c> header.
+/// the server supplied a <c>Retry-After</c> header.
 /// </summary>
-public class APITooManyRequestsException : APIException
+/// <param name="message">Description of the error.</param>
+/// <param name="innerException">Underlying cause, if any.</param>
+/// <param name="retryAfter">Duration to wait before retrying, parsed from the <c>Retry-After</c> header.</param>
+public sealed class APITooManyRequestsException(
+    string? message = null,
+    Exception? innerException = null,
+    TimeSpan? retryAfter = null)
+    : APIException(message, innerException, HttpStatusCode.TooManyRequests)
 {
-    public APITooManyRequestsException() : base(HttpStatusCode.TooManyRequests)
+    /// <summary>
+    /// Parameterless constructor for reflection-based creation and serializer defaults.
+    /// </summary>
+    public APITooManyRequestsException() : this(null, null, null)
     {
-    }
-
-    public APITooManyRequestsException(TimeSpan? retryAfter) : base(HttpStatusCode.TooManyRequests)
-    {
-        RetryAfter = retryAfter;
-    }
-
-    public APITooManyRequestsException(string? message, TimeSpan? retryAfter = null)
-        : base(HttpStatusCode.TooManyRequests, message)
-    {
-        RetryAfter = retryAfter;
-    }
-
-    public APITooManyRequestsException(string? message, Exception? innerException, TimeSpan? retryAfter = null)
-        : base(HttpStatusCode.TooManyRequests, message, innerException)
-    {
-        RetryAfter = retryAfter;
     }
 
     /// <summary>
@@ -38,16 +29,16 @@ public class APITooManyRequestsException : APIException
     /// <c>Retry-After</c> response header. <see langword="null"/> when the header
     /// is absent or cannot be interpreted.
     /// </summary>
-    public TimeSpan? RetryAfter { get; }
+    public TimeSpan? RetryAfter { get; } = retryAfter;
 
     /// <summary>
     /// Parses a <see cref="RetryConditionHeaderValue"/> into a <see cref="TimeSpan"/>.
     /// Supports delta-seconds (<c>Retry-After: 120</c>) and HTTP-date
     /// (<c>Retry-After: Wed, 21 Oct 2015 07:28:00 GMT</c>) forms. Returns
-    /// <see langword="null"/> when the header is absent or the date has already
-    /// passed and would yield a non-positive duration.
+    /// <see langword="null"/> when the header is absent; returns
+    /// <see cref="TimeSpan.Zero"/> when the HTTP-date has already passed.
     /// </summary>
-    /// <param name="header">The parsed <c>Retry-After</c> header value, or <see langword="null"/>.</param>
+    /// <param name="header">Parsed <c>Retry-After</c> header value, or <see langword="null"/>.</param>
     /// <param name="now">Reference time for HTTP-date calculations. Defaults to <see cref="DateTimeOffset.UtcNow"/>.</param>
     public static TimeSpan? ParseRetryAfter(RetryConditionHeaderValue? header, DateTimeOffset? now = null)
     {

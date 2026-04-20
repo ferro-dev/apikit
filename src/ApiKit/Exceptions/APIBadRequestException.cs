@@ -1,25 +1,20 @@
 using System.Net;
 
-#pragma warning disable CS1591
-
 namespace ApiKit.Exceptions;
 
 /// <summary>
-/// Thrown when the API returns an HTTP 400 Bad Request response, typically
-/// indicating a malformed request body or invalid parameters.
+/// Thrown when the API returns an HTTP 400 Bad Request response, typically indicating
+/// a malformed request body or invalid parameters.
 /// </summary>
-public class APIBadRequestException : APIException
+/// <param name="message">Description of the error.</param>
+/// <param name="innerException">Underlying cause, if any.</param>
+public sealed class APIBadRequestException(string? message = null, Exception? innerException = null)
+    : APIException(message, innerException, HttpStatusCode.BadRequest)
 {
-    public APIBadRequestException() : base(HttpStatusCode.BadRequest)
-    {
-    }
-
-    public APIBadRequestException(string? message) : base(HttpStatusCode.BadRequest, message)
-    {
-    }
-
-    public APIBadRequestException(string? message, Exception? innerException)
-        : base(HttpStatusCode.BadRequest, message, innerException)
+    /// <summary>
+    /// Parameterless constructor for reflection-based creation and serializer defaults.
+    /// </summary>
+    public APIBadRequestException() : this(null, null)
     {
     }
 }

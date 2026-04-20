@@ -21,11 +21,34 @@ public class APITooManyRequestsExceptionTests
     }
 
     [Fact]
-    public void Ctor_stores_retry_after()
+    public void RetryAfter_preserved_via_named_arg()
     {
-        var ex = new APITooManyRequestsException(TimeSpan.FromSeconds(30));
+        var ex = new APITooManyRequestsException(retryAfter: TimeSpan.FromSeconds(30));
 
         ex.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
+        ex.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+    }
+
+    [Fact]
+    public void All_params_preserved()
+    {
+        var inner = new Exception("root");
+
+        var ex = new APITooManyRequestsException("slow down", inner, TimeSpan.FromSeconds(5));
+
+        ex.Message.ShouldBe("slow down");
+        ex.InnerException.ShouldBeSameAs(inner);
+        ex.RetryAfter.ShouldBe(TimeSpan.FromSeconds(5));
+        ex.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+    }
+
+    [Fact]
+    public void Parameterless_ctor_usable_via_reflection()
+    {
+        var ex = (APITooManyRequestsException)Activator.CreateInstance(typeof(APITooManyRequestsException))!;
+
+        ex.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+        ex.RetryAfter.ShouldBeNull();
     }
 
     [Fact]
@@ -73,27 +96,5 @@ public class APITooManyRequestsExceptionTests
         var parsed = APITooManyRequestsException.ParseRetryAfter(response.Headers.RetryAfter);
 
         parsed.ShouldBe(TimeSpan.FromSeconds(60));
-    }
-
-    [Fact]
-    public void Message_ctor_preserves_message_and_retry_after()
-    {
-        var ex = new APITooManyRequestsException("slow down", TimeSpan.FromSeconds(10));
-
-        ex.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
-        ex.Message.ShouldBe("slow down");
-        ex.RetryAfter.ShouldBe(TimeSpan.FromSeconds(10));
-    }
-
-    [Fact]
-    public void Message_inner_ctor_preserves_all()
-    {
-        var inner = new Exception("root");
-
-        var ex = new APITooManyRequestsException("slow down", inner, TimeSpan.FromSeconds(5));
-
-        ex.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
-        ex.InnerException.ShouldBeSameAs(inner);
-        ex.RetryAfter.ShouldBe(TimeSpan.FromSeconds(5));
     }
 }

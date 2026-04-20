@@ -17,7 +17,7 @@ public class APIExceptionTests
     }
 
     [Fact]
-    public void Message_ctor_preserves_message_and_leaves_status_null()
+    public void Message_preserved_and_status_defaults_null()
     {
         var ex = new APIException("boom");
 
@@ -26,7 +26,7 @@ public class APIExceptionTests
     }
 
     [Fact]
-    public void Inner_ctor_preserves_inner_exception()
+    public void Inner_exception_preserved()
     {
         var inner = new InvalidOperationException("root cause");
 
@@ -36,31 +36,22 @@ public class APIExceptionTests
     }
 
     [Fact]
-    public void Status_ctor_sets_status_code()
+    public void Status_code_preserved_via_named_arg()
     {
-        var ex = new APIException((HttpStatusCode)418);
-
-        ex.StatusCode.ShouldBe((HttpStatusCode)418);
-    }
-
-    [Fact]
-    public void Status_message_ctor_sets_both()
-    {
-        var ex = new APIException(HttpStatusCode.Conflict, "conflict");
+        var ex = new APIException(statusCode: HttpStatusCode.Conflict);
 
         ex.StatusCode.ShouldBe(HttpStatusCode.Conflict);
-        ex.Message.ShouldBe("conflict");
     }
 
     [Fact]
-    public void Status_message_inner_ctor_sets_all()
+    public void All_params_preserved()
     {
         var inner = new InvalidOperationException("root");
 
-        var ex = new APIException(HttpStatusCode.Conflict, "conflict", inner);
+        var ex = new APIException("conflict", inner, HttpStatusCode.Conflict);
 
-        ex.StatusCode.ShouldBe(HttpStatusCode.Conflict);
         ex.Message.ShouldBe("conflict");
         ex.InnerException.ShouldBeSameAs(inner);
+        ex.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 }

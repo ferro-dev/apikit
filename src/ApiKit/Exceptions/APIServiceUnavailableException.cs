@@ -1,39 +1,28 @@
 using System.Net;
 
-#pragma warning disable CS1591
-
 namespace ApiKit.Exceptions;
 
 /// <summary>
 /// Thrown when the API returns an HTTP 5xx response, indicating the service is
 /// temporarily unable to handle the request. Defaults to
-/// <see cref="HttpStatusCode.ServiceUnavailable"/>.
+/// <see cref="HttpStatusCode.ServiceUnavailable"/>; pass the specific 5xx code
+/// (e.g. <see cref="HttpStatusCode.InternalServerError"/>,
+/// <see cref="HttpStatusCode.BadGateway"/>, <see cref="HttpStatusCode.GatewayTimeout"/>)
+/// when known.
 /// </summary>
-public class APIServiceUnavailableException : APIException
+/// <param name="message">Description of the error.</param>
+/// <param name="innerException">Underlying cause, if any.</param>
+/// <param name="statusCode">Specific 5xx status code. Defaults to <see cref="HttpStatusCode.ServiceUnavailable"/>.</param>
+public sealed class APIServiceUnavailableException(
+    string? message = null,
+    Exception? innerException = null,
+    HttpStatusCode statusCode = HttpStatusCode.ServiceUnavailable)
+    : APIException(message, innerException, statusCode)
 {
-    public APIServiceUnavailableException() : base(HttpStatusCode.ServiceUnavailable)
-    {
-    }
-
-    public APIServiceUnavailableException(HttpStatusCode statusCode) : base(statusCode)
-    {
-    }
-
-    public APIServiceUnavailableException(string? message) : base(HttpStatusCode.ServiceUnavailable, message)
-    {
-    }
-
-    public APIServiceUnavailableException(HttpStatusCode statusCode, string? message) : base(statusCode, message)
-    {
-    }
-
-    public APIServiceUnavailableException(string? message, Exception? innerException)
-        : base(HttpStatusCode.ServiceUnavailable, message, innerException)
-    {
-    }
-
-    public APIServiceUnavailableException(HttpStatusCode statusCode, string? message, Exception? innerException)
-        : base(statusCode, message, innerException)
+    /// <summary>
+    /// Parameterless constructor for reflection-based creation and serializer defaults.
+    /// </summary>
+    public APIServiceUnavailableException() : this(null, null, HttpStatusCode.ServiceUnavailable)
     {
     }
 }

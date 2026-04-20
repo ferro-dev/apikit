@@ -1,54 +1,39 @@
 using System.Net;
 
-// Ctors are thin wrappers mirroring System.Exception; per-ctor summaries would be noise.
-#pragma warning disable CS1591
-
 namespace ApiKit.Exceptions;
 
 /// <summary>
 /// Base exception type for errors returned by an HTTP API. Carries the originating
-/// <see cref="HttpStatusCode"/>. Derived types represent specific status codes
-/// (<see cref="APIBadRequestException"/>, <see cref="APIForbiddenException"/>,
+/// <see cref="HttpStatusCode"/> when known. Derived types model specific status
+/// classes (<see cref="APIBadRequestException"/>, <see cref="APIForbiddenException"/>,
 /// <see cref="APINotFoundException"/>, <see cref="APITooManyRequestsException"/>,
-/// <see cref="APIServiceUnavailableException"/>).
+/// <see cref="APIServiceUnavailableException"/>). Throw this type directly only when
+/// the response status is not modeled by a derived type.
 /// </summary>
 /// <remarks>
-/// This type does not carry a typed error body. Consumers that need to surface a
-/// deserialized error payload should attach it via <see cref="Exception.Data"/> or
-/// derive their own exception type.
+/// This type intentionally does not carry a typed error body. Consumers that need to
+/// surface a deserialized error payload should attach it via <see cref="Exception.Data"/>
+/// or derive their own exception type.
 /// </remarks>
-public class APIException : Exception
+/// <param name="message">Description of the error.</param>
+/// <param name="innerException">Underlying cause, if any.</param>
+/// <param name="statusCode">HTTP status code associated with the failing response, when known.</param>
+public class APIException(
+    string? message = null,
+    Exception? innerException = null,
+    HttpStatusCode? statusCode = null)
+    : Exception(message, innerException)
 {
-    public APIException()
+    /// <summary>
+    /// Parameterless constructor for reflection-based creation (e.g.
+    /// <see cref="Activator.CreateInstance(Type)"/>) and serializer defaults.
+    /// </summary>
+    public APIException() : this(null, null, null)
     {
-    }
-
-    public APIException(string? message) : base(message)
-    {
-    }
-
-    public APIException(string? message, Exception? innerException) : base(message, innerException)
-    {
-    }
-
-    public APIException(HttpStatusCode statusCode)
-    {
-        StatusCode = statusCode;
-    }
-
-    public APIException(HttpStatusCode statusCode, string? message) : base(message)
-    {
-        StatusCode = statusCode;
-    }
-
-    public APIException(HttpStatusCode statusCode, string? message, Exception? innerException)
-        : base(message, innerException)
-    {
-        StatusCode = statusCode;
     }
 
     /// <summary>
     /// HTTP status code associated with the failing response, when known.
     /// </summary>
-    public HttpStatusCode? StatusCode { get; }
+    public HttpStatusCode? StatusCode { get; } = statusCode;
 }

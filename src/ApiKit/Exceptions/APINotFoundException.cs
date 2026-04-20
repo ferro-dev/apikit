@@ -1,25 +1,20 @@
 using System.Net;
 
-#pragma warning disable CS1591
-
 namespace ApiKit.Exceptions;
 
 /// <summary>
 /// Thrown when the API returns an HTTP 404 Not Found response, indicating the
 /// requested resource does not exist.
 /// </summary>
-public class APINotFoundException : APIException
+/// <param name="message">Description of the error.</param>
+/// <param name="innerException">Underlying cause, if any.</param>
+public sealed class APINotFoundException(string? message = null, Exception? innerException = null)
+    : APIException(message, innerException, HttpStatusCode.NotFound)
 {
-    public APINotFoundException() : base(HttpStatusCode.NotFound)
-    {
-    }
-
-    public APINotFoundException(string? message) : base(HttpStatusCode.NotFound, message)
-    {
-    }
-
-    public APINotFoundException(string? message, Exception? innerException)
-        : base(HttpStatusCode.NotFound, message, innerException)
+    /// <summary>
+    /// Parameterless constructor for reflection-based creation and serializer defaults.
+    /// </summary>
+    public APINotFoundException() : this(null, null)
     {
     }
 }

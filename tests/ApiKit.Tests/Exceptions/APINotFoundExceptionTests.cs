@@ -20,7 +20,7 @@ public class APINotFoundExceptionTests
     }
 
     [Fact]
-    public void Message_ctor_preserves_status_404()
+    public void Message_preserved_with_status()
     {
         var ex = new APINotFoundException("missing");
 
@@ -29,13 +29,21 @@ public class APINotFoundExceptionTests
     }
 
     [Fact]
-    public void Message_inner_ctor_preserves_all()
+    public void Inner_exception_preserved()
     {
         var inner = new Exception("root");
 
         var ex = new APINotFoundException("missing", inner);
 
-        ex.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         ex.InnerException.ShouldBeSameAs(inner);
+        ex.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public void Parameterless_ctor_usable_via_reflection()
+    {
+        var ex = (APINotFoundException)Activator.CreateInstance(typeof(APINotFoundException))!;
+
+        ex.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 }

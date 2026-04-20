@@ -24,13 +24,13 @@ public class APIServiceUnavailableExceptionTests
     [InlineData(HttpStatusCode.BadGateway)]
     [InlineData(HttpStatusCode.ServiceUnavailable)]
     [InlineData(HttpStatusCode.GatewayTimeout)]
-    public void Explicit_status_overrides_default(HttpStatusCode status)
+    public void Named_status_overrides_default(HttpStatusCode status)
     {
-        new APIServiceUnavailableException(status).StatusCode.ShouldBe(status);
+        new APIServiceUnavailableException(statusCode: status).StatusCode.ShouldBe(status);
     }
 
     [Fact]
-    public void Message_ctor_keeps_default_status()
+    public void Message_preserved_with_default_status()
     {
         var ex = new APIServiceUnavailableException("down");
 
@@ -39,33 +39,22 @@ public class APIServiceUnavailableExceptionTests
     }
 
     [Fact]
-    public void Status_message_ctor_covers_502()
-    {
-        var ex = new APIServiceUnavailableException(HttpStatusCode.BadGateway, "gateway");
-
-        ex.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
-        ex.Message.ShouldBe("gateway");
-    }
-
-    [Fact]
-    public void Message_inner_ctor_preserves_all()
+    public void All_params_preserved()
     {
         var inner = new Exception("root");
 
-        var ex = new APIServiceUnavailableException("down", inner);
+        var ex = new APIServiceUnavailableException("boom", inner, HttpStatusCode.InternalServerError);
+
+        ex.Message.ShouldBe("boom");
+        ex.InnerException.ShouldBeSameAs(inner);
+        ex.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public void Parameterless_ctor_usable_via_reflection()
+    {
+        var ex = (APIServiceUnavailableException)Activator.CreateInstance(typeof(APIServiceUnavailableException))!;
 
         ex.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
-        ex.InnerException.ShouldBeSameAs(inner);
-    }
-
-    [Fact]
-    public void Status_message_inner_ctor_preserves_all()
-    {
-        var inner = new Exception("root");
-
-        var ex = new APIServiceUnavailableException(HttpStatusCode.InternalServerError, "boom", inner);
-
-        ex.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-        ex.InnerException.ShouldBeSameAs(inner);
     }
 }

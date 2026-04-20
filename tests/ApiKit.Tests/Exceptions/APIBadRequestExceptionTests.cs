@@ -20,7 +20,7 @@ public class APIBadRequestExceptionTests
     }
 
     [Fact]
-    public void Message_ctor_preserves_status_400()
+    public void Message_preserved_with_status()
     {
         var ex = new APIBadRequestException("bad");
 
@@ -29,14 +29,21 @@ public class APIBadRequestExceptionTests
     }
 
     [Fact]
-    public void Message_inner_ctor_preserves_all()
+    public void Inner_exception_preserved()
     {
         var inner = new Exception("root");
 
         var ex = new APIBadRequestException("bad", inner);
 
-        ex.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        ex.Message.ShouldBe("bad");
         ex.InnerException.ShouldBeSameAs(inner);
+        ex.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public void Parameterless_ctor_usable_via_reflection()
+    {
+        var ex = (APIBadRequestException)Activator.CreateInstance(typeof(APIBadRequestException))!;
+
+        ex.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 }

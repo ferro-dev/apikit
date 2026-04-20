@@ -1,39 +1,26 @@
 using System.Net;
 
-#pragma warning disable CS1591
-
 namespace ApiKit.Exceptions;
 
 /// <summary>
 /// Thrown when the API returns an HTTP 401 Unauthorized or 403 Forbidden response,
 /// indicating that the caller is not authenticated or lacks permission to perform
-/// the requested action. Defaults to <see cref="HttpStatusCode.Forbidden"/>.
+/// the requested action. Defaults to <see cref="HttpStatusCode.Forbidden"/>; pass
+/// <see cref="HttpStatusCode.Unauthorized"/> explicitly for 401 responses.
 /// </summary>
-public class APIForbiddenException : APIException
+/// <param name="message">Description of the error.</param>
+/// <param name="innerException">Underlying cause, if any.</param>
+/// <param name="statusCode">Either <see cref="HttpStatusCode.Forbidden"/> (default) or <see cref="HttpStatusCode.Unauthorized"/>.</param>
+public sealed class APIForbiddenException(
+    string? message = null,
+    Exception? innerException = null,
+    HttpStatusCode statusCode = HttpStatusCode.Forbidden)
+    : APIException(message, innerException, statusCode)
 {
-    public APIForbiddenException() : base(HttpStatusCode.Forbidden)
-    {
-    }
-
-    public APIForbiddenException(HttpStatusCode statusCode) : base(statusCode)
-    {
-    }
-
-    public APIForbiddenException(string? message) : base(HttpStatusCode.Forbidden, message)
-    {
-    }
-
-    public APIForbiddenException(HttpStatusCode statusCode, string? message) : base(statusCode, message)
-    {
-    }
-
-    public APIForbiddenException(string? message, Exception? innerException)
-        : base(HttpStatusCode.Forbidden, message, innerException)
-    {
-    }
-
-    public APIForbiddenException(HttpStatusCode statusCode, string? message, Exception? innerException)
-        : base(statusCode, message, innerException)
+    /// <summary>
+    /// Parameterless constructor for reflection-based creation and serializer defaults.
+    /// </summary>
+    public APIForbiddenException() : this(null, null, HttpStatusCode.Forbidden)
     {
     }
 }
