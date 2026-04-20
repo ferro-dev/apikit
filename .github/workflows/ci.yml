@@ -46,7 +46,8 @@ jobs:
       - name: Coverage report
         uses: irongut/CodeCoverageSummary@v1.3.0
         # Skip while src/ has no .cs yet — merged cobertura has empty <packages/> and the action errors.
-        if: always() && hashFiles('src/**/*.cs') != ''
+        # Exclude obj/bin so SDK-generated files (AssemblyInfo.cs, GlobalUsings.g.cs) don't trip the gate.
+        if: always() && hashFiles('src/**/*.cs', '!src/**/obj/**', '!src/**/bin/**') != ''
         with:
           filename: artifacts/coverage/coverage.cobertura.xml
           badge: true
@@ -56,7 +57,7 @@ jobs:
 
       - name: Add coverage to PR
         uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request' && hashFiles('src/**/*.cs') != ''
+        if: github.event_name == 'pull_request' && hashFiles('src/**/*.cs', '!src/**/obj/**', '!src/**/bin/**') != ''
         with:
           path: code-coverage-results.md
 
